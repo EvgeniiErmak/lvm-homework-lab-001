@@ -1,0 +1,178 @@
+    1  2026-07-12 02:58:48 clear
+    2  2026-07-12 02:59:18 apt update && apt full-upgrade -y
+    3  2026-07-12 03:00:11 clear
+    4  2026-07-12 03:00:33 lsblk -f
+    5  2026-07-12 03:00:37 pvs
+    6  2026-07-12 03:00:48 vgs
+    7  2026-07-12 03:00:58 lvs -a -o +devices
+    8  2026-07-12 03:01:09 df -h
+    9  2026-07-12 03:01:11 cat /etc/fstab
+   10  2026-07-12 03:01:22 free -h
+   11  2026-07-12 03:01:27 cat /etc/os-release
+   12  2026-07-12 03:01:50 hostnamectl
+   13  2026-07-12 03:02:19 clear
+   14  2026-07-12 03:09:23 which zfs zpool 2>/dev/null; dpkg -l | grep -E "zfsutils|zfs-dkms|btrfs-progs"
+   15  2026-07-12 03:09:43 clear
+   16  2026-07-12 03:10:56 lsblk -b -o NAME,SIZE,TYPE,MOUNTPOINTS /dev/nvme1n1
+   17  2026-07-12 03:10:56 blockdev --getsize64 /dev/nvme1n1
+   18  2026-07-12 03:10:56 swapon --show
+   19  2026-07-12 03:10:56 mount | grep nvme1n1
+   20  2026-07-12 03:10:56 cat /proc/swaps
+   21  2026-07-12 03:10:56 findmnt | grep nvme1n1
+   22  2026-07-12 03:11:27 clear
+   23  2026-07-12 03:15:59 vgchange -an ubuntu-vg
+   24  2026-07-12 03:16:05 lvremove -f /dev/ubuntu-vg/ubuntu-lv
+   25  2026-07-12 03:16:09 vgremove -f ubuntu-vg
+   26  2026-07-12 03:16:16 pvremove -ff /dev/nvme1n1p3
+   27  2026-07-12 03:16:26 wipefs -a /dev/nvme1n1p1
+   28  2026-07-12 03:16:33 wipefs -a /dev/nvme1n1p2
+   29  2026-07-12 03:16:46 wipefs -a /dev/nvme1n1p3
+   30  2026-07-12 03:17:02 wipefs -a /dev/nvme1n1
+   31  2026-07-12 03:17:12 sgdisk --zap-all /dev/nvme1n1
+   32  2026-07-12 03:17:23 partprobe /dev/nvme1n1
+   33  2026-07-12 03:17:29 lsblk /dev/nvme1n1
+   34  2026-07-12 03:21:03 clear
+   35  2026-07-12 03:23:11 nano ~/.bashrc
+   36  2026-07-12 03:23:41 source ~/.bashrc
+   37  2026-07-12 03:24:15 ls
+   38  2026-07-12 03:24:27 ls -la
+   39  2026-07-12 03:24:37 lsblk
+   40  2026-07-12 03:25:28 clear
+   41  2026-07-12 03:25:41 parted -s /dev/nvme1n1 mklabel gpt
+   42  2026-07-12 03:25:47 parted -s /dev/nvme1n1 mkpart lvm1 1MiB 150GiB
+   43  2026-07-12 03:25:56 parted -s /dev/nvme1n1 mkpart lvm2 150GiB 250GiB
+   44  2026-07-12 03:26:02 parted -s /dev/nvme1n1 mkpart btrfsdata 250GiB 350GiB
+   45  2026-07-12 03:26:08 parted -s /dev/nvme1n1 mkpart btrfscache 350GiB 365GiB
+   46  2026-07-12 03:26:13 parted -s /dev/nvme1n1 mkpart zfsdata 365GiB 445GiB
+   47  2026-07-12 03:26:17 parted -s /dev/nvme1n1 mkpart zfscache 445GiB 455GiB
+   48  2026-07-12 03:26:24 parted -s /dev/nvme1n1 set 1 lvm on
+   49  2026-07-12 03:26:33 parted -s /dev/nvme1n1 set 2 lvm on
+   50  2026-07-12 03:26:38 partprobe /dev/nvme1n1
+   51  2026-07-12 03:26:43 lsblk /dev/nvme1n1
+   52  2026-07-12 03:27:28 apt update && apt full-upgrade -y
+   53  2026-07-12 03:27:45 clear
+   54  2026-07-12 03:27:51 apt install -y zfsutils-linux
+   55  2026-07-12 03:28:15 modprobe zfs
+   56  2026-07-12 03:28:22 zfs version
+   57  2026-07-12 03:28:54 clear
+   58  2026-07-12 03:29:03 pvcreate /dev/nvme1n1p1 /dev/nvme1n1p2
+   59  2026-07-12 03:29:09 vgcreate lab-vg /dev/nvme1n1p1 /dev/nvme1n1p2
+   60  2026-07-12 03:29:16 pvs
+   61  2026-07-12 03:29:25 vgs lab-vg
+   62  2026-07-12 03:29:42 lvcreate -L 20G -n lab-root lab-vg
+   63  2026-07-12 03:29:48 mkfs.ext4 /dev/lab-vg/lab-root
+   64  2026-07-12 03:29:55 mkdir -p /mnt/lab-root
+   65  2026-07-12 03:30:02 mount /dev/lab-vg/lab-root /mnt/lab-root
+   66  2026-07-12 03:30:27 clear
+   67  2026-07-12 03:30:36 dd if=/dev/urandom of=/mnt/lab-root/fill1.img bs=1M count=3000
+   68  2026-07-12 03:30:53 dd if=/dev/urandom of=/mnt/lab-root/fill2.img bs=1M count=1500
+   69  2026-07-12 03:31:00 df -h /mnt/lab-root
+   70  2026-07-12 03:31:14 umount /mnt/lab-root
+   71  2026-07-12 03:31:20 e2fsck -f /dev/lab-vg/lab-root
+   72  2026-07-12 03:31:26 resize2fs /dev/lab-vg/lab-root 8G
+   73  2026-07-12 03:31:32 lvreduce -L 8G /dev/lab-vg/lab-root
+   74  2026-07-12 03:31:48 e2fsck -f /dev/lab-vg/lab-root
+   75  2026-07-12 03:31:54 mount /dev/lab-vg/lab-root /mnt/lab-root
+   76  2026-07-12 03:32:00 df -h /mnt/lab-root
+   77  2026-07-12 03:32:05 lvs lab-vg
+   78  2026-07-12 03:32:41 clear
+   79  2026-07-12 03:32:53 lvcreate -L 30G -n lab-home lab-vg
+   80  2026-07-12 03:33:01 mkfs.xfs /dev/lab-vg/lab-home
+   81  2026-07-12 03:33:07 mkdir -p /mnt/lab-home
+   82  2026-07-12 03:33:35 clear
+   83  2026-07-12 03:33:55 lvcreate --type mirror -m1 --mirrorlog core -L 10G -n lab-var lab-vg /dev/nvme1n1p1 /dev/nvme1n1p2
+   84  2026-07-12 03:34:01 mkfs.ext4 /dev/lab-vg/lab-var
+   85  2026-07-12 03:34:06 mkdir -p /mnt/lab-var
+   86  2026-07-12 03:34:11 lvs -a -o +devices lab-vg
+   87  2026-07-12 03:34:39 clear
+   88  2026-07-12 03:34:45 blkid /dev/lab-vg/lab-root /dev/lab-vg/lab-home /dev/lab-vg/lab-var
+   89  2026-07-12 03:36:54 cat >> /etc/fstab << 'EOF'
+
+# --- LVM homework lab ---
+UUID="00bdd583-7b14-47d8-800b-5547dfda84da" /mnt/lab-root ext4 defaults,noatime 0 2
+UUID="5a0dbc76-34b3-4e5e-9290-7b4f30b53e0b" /mnt/lab-home xfs  defaults,noatime,nodiratime 0 2
+UUID="67b44f4a-dbc6-4b3e-90dd-7cd5f4b07583"  /mnt/lab-var  ext4 defaults,noatime,data=writeback 0 2
+EOF
+
+   90  2026-07-12 03:37:05 umount /mnt/lab-root
+   91  2026-07-12 03:37:13 mount -a
+   92  2026-07-12 03:37:19 df -hT | grep /mnt/lab
+   93  2026-07-12 03:37:37 mount /dev/lab-vg/lab-home /mnt/lab-home
+   94  2026-07-12 03:37:37 for i in 1 2 3 4 5; do   dd if=/dev/urandom of=/mnt/lab-home/file$i.dat bs=1M count=100; done
+   95  2026-07-12 03:37:38 ls -lh /mnt/lab-home
+   96  2026-07-12 03:38:20 clear
+   97  2026-07-12 03:38:47 lvcreate -L 2G -s -n lab-home-snap /dev/lab-vg/lab-home
+   98  2026-07-12 03:38:53 lvs -a lab-vg
+   99  2026-07-12 03:38:59 rm -f /mnt/lab-home/file3.dat /mnt/lab-home/file4.dat
+  100  2026-07-12 03:39:05 ls -lh /mnt/lab-home
+  101  2026-07-12 03:39:17 umount /mnt/lab-home
+  102  2026-07-12 03:39:23 lvconvert --merge /dev/lab-vg/lab-home-snap
+  103  2026-07-12 03:39:40 lvs -a lab-vg
+  104  2026-07-12 03:39:49 vgchange -ay lab-vg
+  105  2026-07-12 03:39:57 mount /dev/lab-vg/lab-home /mnt/lab-home
+  106  2026-07-12 03:40:02 ls -lh /mnt/lab-home
+  107  2026-07-12 03:40:34 clear
+  108  2026-07-12 03:40:42 pvcreate /dev/nvme1n1p3 /dev/nvme1n1p4
+  109  2026-07-12 03:40:49 vgcreate btrfs-vg /dev/nvme1n1p3 /dev/nvme1n1p4
+  110  2026-07-12 03:40:57 lvcreate -L 95G -n btrfs-data btrfs-vg /dev/nvme1n1p3
+  111  2026-07-12 03:41:02 lvcreate -L 14G -n btrfs-cachepool btrfs-vg /dev/nvme1n1p4
+  112  2026-07-12 03:41:10 lvconvert --type cache-pool --cachemode writethrough -y btrfs-vg/btrfs-cachepool
+  113  2026-07-12 03:41:16 lvconvert --type cache --cachepool btrfs-vg/btrfs-cachepool btrfs-vg/btrfs-data -y
+  114  2026-07-12 03:41:22 lvs -a -o +devices btrfs-vg
+  115  2026-07-12 03:42:38 clear
+  116  2026-07-12 03:42:55 mkfs.btrfs /dev/btrfs-vg/btrfs-data
+  117  2026-07-12 03:43:02 mkdir -p /opt/btrfs
+  118  2026-07-12 03:43:06 mount /dev/btrfs-vg/btrfs-data /opt/btrfs
+  119  2026-07-12 03:43:13 echo "UUID=$(blkid -s UUID -o value /dev/btrfs-vg/btrfs-data) /opt/btrfs btrfs defaults,noatime,compress=zstd 0 2" >> /etc/fstab
+  120  2026-07-12 03:43:19 mount -a
+  121  2026-07-12 03:43:52 clear
+  122  2026-07-12 03:44:00 btrfs subvolume create /opt/btrfs/subvol1
+  123  2026-07-12 03:44:08 echo "hello btrfs" > /opt/btrfs/subvol1/test.txt
+  124  2026-07-12 03:44:14 btrfs subvolume snapshot /opt/btrfs/subvol1 /opt/btrfs/subvol1-snap
+  125  2026-07-12 03:44:21 ls /opt/btrfs/subvol1-snap
+  126  2026-07-12 03:44:26 btrfs subvolume list /opt/btrfs
+  127  2026-07-12 03:44:33 zpool create labtank /dev/nvme1n1p5
+  128  2026-07-12 03:44:39 zpool add labtank cache /dev/nvme1n1p6
+  129  2026-07-12 03:44:43 zpool status labtank
+  130  2026-07-12 03:45:13 clear
+  131  2026-07-12 03:45:20 zfs create labtank/opt
+  132  2026-07-12 03:45:25 zfs set mountpoint=/opt/zfs labtank/opt
+  133  2026-07-12 03:45:31 zfs list
+  134  2026-07-12 03:45:36 echo "hello zfs" > /opt/zfs/test.txt
+  135  2026-07-12 03:45:41 zfs snapshot labtank/opt@snap1
+  136  2026-07-12 03:45:49 zfs list -t snapshot
+  137  2026-07-12 03:45:57 rm /opt/zfs/test.txt
+  138  2026-07-12 03:46:01 zfs rollback labtank/opt@snap1
+  139  2026-07-12 03:46:06 cat /opt/zfs/test.txt
+  140  2026-07-12 03:46:48 lsblk -f /dev/nvme1n1
+  141  2026-07-12 03:46:55 clear
+  142  2026-07-12 03:46:57 lsblk -f /dev/nvme1n1
+  143  2026-07-12 03:47:03 pvs; vgs; lvs -a -o +devices
+  144  2026-07-12 03:47:13 clear
+  145  2026-07-12 03:47:17 lsblk -f /dev/nvme1n1
+  146  2026-07-12 03:47:42 clear
+  147  2026-07-12 03:47:45 pvs; vgs; lvs -a -o +devices
+  148  2026-07-12 03:48:06 clear
+  149  2026-07-12 03:48:11 df -hT | grep -E "lab-|btrfs|zfs"
+  150  2026-07-12 03:48:16 zpool status
+  151  2026-07-12 03:50:06 clear
+  152  2026-07-12 03:50:15 lsblk -f /dev/nvme1n1
+  153  2026-07-12 03:50:15 pvs; vgs; lvs -a -o +devices
+  154  2026-07-12 03:50:15 df -hT | grep -E "lab-|btrfs|zfs"
+  155  2026-07-12 03:50:15 zpool status
+  156  2026-07-12 03:54:05 clear
+  157  2026-07-12 03:54:07 mkdir -p ~/lvm-homework-lab-001/screenshots
+  158  2026-07-12 03:54:07 cd ~/lvm-homework-lab-001
+  159  2026-07-12 03:54:07 git init
+  160  2026-07-12 03:54:07 git config user.name "EvgeniiErmak"
+  161  2026-07-12 03:54:07 git config user.email "djermak3000@mail.ru"
+  162  2026-07-12 03:54:07 touch screenshots/.gitkeep
+  163  2026-07-12 03:55:36 nano README.md
+  164  2026-07-12 03:56:06 git add .
+  165  2026-07-12 03:56:06 git commit -m "LVM homework: root/home/var, mirror, snapshots, btrfs+cache, zfs+cache"
+  166  2026-07-12 03:56:06 git branch -M main
+  167  2026-07-12 03:56:06 git remote add origin https://github.com/EvgeniiErmak/lvm-homework-lab-001.git
+  168  2026-07-12 03:56:06 git push -u origin main
+  169  2026-07-12 04:02:38 cd ~
+  170  2026-07-12 04:02:43 clear
+  171  2026-07-12 04:02:50 HISTTIMEFORMAT="%F %T " history > ~/lvm-homework-lab-001/bash_history.log

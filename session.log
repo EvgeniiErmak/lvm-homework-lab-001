@@ -1,0 +1,188 @@
+Script started on 2026-07-12 04:05:08+00:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="125" LINES="50"]
+[?2004h[32mroot[0m@[36motus-master-22[0m:[34m~[0m# [7mecho "=== 1. Диск и разделы ==="[27m
+[7mlsblk -f /dev/nvme1n1[27m
+
+[7mecho "=== 2. PV / VG / LV ==="[27m
+[7mpvs[27m
+[7mvgs[27m
+[7mlvs -a -o +devices[27m
+
+[7mecho "=== 3. Точки монтирования и fstab ==="[27m
+[7mdf -hT | grep -E "lab-|btrfs|zfs"[27m
+[7mcat /etc/fstab[27m
+
+[7mecho "=== 4. lab-root (демонстрация уменьшения до 8G) ==="[27m
+[7mlvs lab-vg/lab-root[27m
+
+[7mecho "=== 5. lab-var mirror ==="[27m
+[7mlvs -a -o +devices lab-vg/lab-var[27m
+
+[7mecho "=== 6. Состояние home после merge снапшота ==="[27m
+[7mls -lh /mnt/lab-home[27m
+[7mlvs -a lab-vg[27m
+
+[7mecho "=== 7. btrfs + LVM cache ==="[27m
+[7mlvs -a -o +devices btrfs-vg[27m
+[7mbtrfs subvolume list /opt/btrfs[27m
+[7mls /opt/btrfs/subvol1-snap[27m
+
+[7mecho "=== 8. ZFS + L2ARC cache ==="[27m
+[7mzpool status labtank[27m
+[7mzfs list -t snapshot[27m
+[7mcat /opt/zfs/test.txt[27m
+
+[7mexit[27m[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[32mroot[0m@[36motus-master-22[0m:[34m~[0m# echo "=== 1. Диск и разделы ==="
+lsblk -f /dev/nvme1n1
+
+echo "=== 2. PV / VG / LV ==="
+pvs
+vgs
+lvs -a -o +devices
+
+echo "=== 3. Точки монтирования и fstab ==="
+df -hT | grep -E "lab-|btrfs|zfs"
+cat /etc/fstab
+
+echo "=== 4. lab-root (демонстрация уменьшения до 8G) ==="
+lvs lab-vg/lab-root
+
+echo "=== 5. lab-var mirror ==="
+lvs -a -o +devices lab-vg/lab-var
+
+echo "=== 6. Состояние home после merge снапшота ==="
+ls -lh /mnt/lab-home
+lvs -a lab-vg
+
+echo "=== 7. btrfs + LVM cache ==="
+lvs -a -o +devices btrfs-vg
+btrfs subvolume list /opt/btrfs
+ls /opt/btrfs/subvol1-snap
+
+echo "=== 8. ZFS + L2ARC cache ==="
+zpool status labtank
+zfs list -t snapshot
+cat /opt/zfs/test.txt
+
+exit
+[?2004l=== 1. Диск и разделы ===
+NAME                                     FSTYPE FSVER LABEL UUID                                   FSAVAIL FSUSE% MOUNTPOINTS
+nvme1n1                                                                                                           
+├─nvme1n1p1                              LVM2_m LVM2        HJ7uWj-Rmb3-2nsY-onPn-PIxA-eDw0-AtNQje                
+│ ├─lab--vg-lab--root                    ext4   1.0         00bdd583-7b14-47d8-800b-5547dfda84da      2,9G    57% /mnt/lab-root
+│ ├─lab--vg-lab--home                    xfs                5a0dbc76-34b3-4e5e-9290-7b4f30b53e0b     29,3G     2% /mnt/lab-home
+│ └─lab--vg-lab--var_mimage_0                                                                                     
+│   └─lab--vg-lab--var                   ext4   1.0         67b44f4a-dbc6-4b3e-90dd-7cd5f4b07583      9,2G     0% /mnt/lab-var
+├─nvme1n1p2                              LVM2_m LVM2        sfPzYd-BUWL-jp6g-NjFA-jHuj-zW4Q-ss4RrV                
+│ └─lab--vg-lab--var_mimage_1                                                                                     
+│   └─lab--vg-lab--var                   ext4   1.0         67b44f4a-dbc6-4b3e-90dd-7cd5f4b07583      9,2G     0% /mnt/lab-var
+├─nvme1n1p3                              LVM2_m LVM2        JZXEJq-0luA-6hZA-N0C0-hfwf-BwsT-4L0Mce                
+│ ├─btrfs--vg-btrfs--cachepool_cpool_cmeta
+│ │                                                                                                               
+│ │ └─btrfs--vg-btrfs--data              btrfs              59279fb7-9ad4-445d-b220-40a2ca295a98       93G     0% /opt/btrfs
+│ └─btrfs--vg-btrfs--data_corig                                                                                   
+│   └─btrfs--vg-btrfs--data              btrfs              59279fb7-9ad4-445d-b220-40a2ca295a98       93G     0% /opt/btrfs
+├─nvme1n1p4                              LVM2_m LVM2        36VCB7-puD5-fZQ3-ygF4-Lt5I-r3Zp-VTjiUC                
+│ └─btrfs--vg-btrfs--cachepool_cpool_cdata
+│                                                                                                                 
+│   └─btrfs--vg-btrfs--data              btrfs              59279fb7-9ad4-445d-b220-40a2ca295a98       93G     0% /opt/btrfs
+├─nvme1n1p5                                                                                                       
+└─nvme1n1p6                                                                                                       
+=== 2. PV / VG / LV ===
+  PV             VG          Fmt  Attr PSize    PFree   
+  /dev/nvme0n1p3 ubuntu-vg-1 lvm2 a--  <473,89g <373,89g
+  /dev/nvme1n1p1 lab-vg      lvm2 a--  <150,00g <102,00g
+  /dev/nvme1n1p2 lab-vg      lvm2 a--  <100,00g  <90,00g
+  /dev/nvme1n1p3 btrfs-vg    lvm2 a--  <100,00g    4,96g
+  /dev/nvme1n1p4 btrfs-vg    lvm2 a--   <15,00g 1020,00m
+  VG          #PV #LV #SN Attr   VSize    VFree   
+  btrfs-vg      2   1   0 wz--n-  114,99g    5,96g
+  lab-vg        2   3   0 wz--n-  249,99g  191,99g
+  ubuntu-vg-1   1   1   0 wz--n- <473,89g <373,89g
+  LV                            VG          Attr       LSize   Pool                    Origin             Data%  Meta%  Move Log Cpy%Sync Convert Devices                                
+  [btrfs-cachepool_cpool]       btrfs-vg    Cwi---C---  14,00g                                            0,04   11,43           0,00             btrfs-cachepool_cpool_cdata(0)         
+  [btrfs-cachepool_cpool_cdata] btrfs-vg    Cwi-ao----  14,00g                                                                                    /dev/nvme1n1p4(0)                      
+  [btrfs-cachepool_cpool_cmeta] btrfs-vg    ewi-ao----  16,00m                                                                                    /dev/nvme1n1p3(24320)                  
+  btrfs-data                    btrfs-vg    Cwi-aoC---  95,00g [btrfs-cachepool_cpool] [btrfs-data_corig] 0,04   11,43           0,00             btrfs-data_corig(0)                    
+  [btrfs-data_corig]            btrfs-vg    owi-aoC---  95,00g                                                                                    /dev/nvme1n1p3(0)                      
+  [lvol0_pmspare]               btrfs-vg    ewi-------  16,00m                                                                                    /dev/nvme1n1p3(24324)                  
+  lab-home                      lab-vg      -wi-ao----  30,00g                                                                                    /dev/nvme1n1p1(2048)                   
+  lab-root                      lab-vg      -wi-ao----   8,00g                                                                                    /dev/nvme1n1p1(0)                      
+  lab-var                       lab-vg      mwi-aom---  10,00g                                                                   100,00           lab-var_mimage_0(0),lab-var_mimage_1(0)
+  [lab-var_mimage_0]            lab-vg      iwi-aom---  10,00g                                                                                    /dev/nvme1n1p1(9728)                   
+  [lab-var_mimage_1]            lab-vg      iwi-aom---  10,00g                                                                                    /dev/nvme1n1p2(0)                      
+  ubuntu-lv                     ubuntu-vg-1 -wi-ao---- 100,00g                                                                                    /dev/nvme0n1p3(0)                      
+=== 3. Точки монтирования и fstab ===
+/dev/mapper/[01;31m[Klab-[m[K-vg-[01;31m[Klab-[m[K-root        ext4   7,8G  4,4G  3,0G  61% /mnt/[01;31m[Klab-[m[Kroot
+/dev/mapper/[01;31m[Klab-[m[K-vg-[01;31m[Klab-[m[K-var         ext4   9,8G   24K  9,3G   1% /mnt/[01;31m[Klab-[m[Kvar
+/dev/mapper/[01;31m[Klab-[m[K-vg-[01;31m[Klab-[m[K-home        xfs     30G  747M   30G   3% /mnt/[01;31m[Klab-[m[Khome
+/dev/mapper/[01;31m[Kbtrfs[m[K--vg-[01;31m[Kbtrfs[m[K--data    [01;31m[Kbtrfs[m[K   95G  3,6M   93G   1% /opt/[01;31m[Kbtrfs[m[K
+labtank                              [01;31m[Kzfs[m[K     78G  128K   78G   1% /labtank
+labtank/opt                          [01;31m[Kzfs[m[K     78G  128K   78G   1% /opt/[01;31m[Kzfs[m[K
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/ubuntu-vg-1/ubuntu-lv during curtin installation
+/dev/disk/by-id/dm-uuid-LVM-TG66SMbBAdO2261eXAhVKYie1AQBfasOQoLXTjh1BT1qMSJGYwLGlJfc88A6sZQP / ext4 defaults 0 1
+# /boot was on /dev/nvme0n1p2 during curtin installation
+/dev/disk/by-uuid/a4e65d68-a048-4fa5-9cf2-b665e9962d1f /boot ext4 defaults 0 1
+# /boot/efi was on /dev/nvme0n1p1 during curtin installation
+/dev/disk/by-uuid/1100-D6E0 /boot/efi vfat defaults 0 1
+/swap.img	none	swap	sw	0	0
+
+# --- LVM homework lab ---
+UUID="00bdd583-7b14-47d8-800b-5547dfda84da" /mnt/lab-root ext4 defaults,noatime 0 2
+UUID="5a0dbc76-34b3-4e5e-9290-7b4f30b53e0b" /mnt/lab-home xfs  defaults,noatime,nodiratime 0 2
+UUID="67b44f4a-dbc6-4b3e-90dd-7cd5f4b07583"  /mnt/lab-var  ext4 defaults,noatime,data=writeback 0 2
+UUID=59279fb7-9ad4-445d-b220-40a2ca295a98 /opt/btrfs btrfs defaults,noatime,compress=zstd 0 2
+=== 4. lab-root (демонстрация уменьшения до 8G) ===
+  LV       VG     Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  lab-root lab-vg -wi-ao---- 8,00g                                                    
+=== 5. lab-var mirror ===
+  LV      VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert Devices                                
+  lab-var lab-vg mwi-aom--- 10,00g                                    100,00           lab-var_mimage_0(0),lab-var_mimage_1(0)
+=== 6. Состояние home после merge снапшота ===
+total 500M
+-rw-r--r-- 1 root root 100M июл 12 03:37 file1.dat
+-rw-r--r-- 1 root root 100M июл 12 03:37 file2.dat
+-rw-r--r-- 1 root root 100M июл 12 03:37 file3.dat
+-rw-r--r-- 1 root root 100M июл 12 03:37 file4.dat
+-rw-r--r-- 1 root root 100M июл 12 03:37 file5.dat
+  LV                 VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  lab-home           lab-vg -wi-ao---- 30,00g                                                    
+  lab-root           lab-vg -wi-ao----  8,00g                                                    
+  lab-var            lab-vg mwi-aom--- 10,00g                                    100,00          
+  [lab-var_mimage_0] lab-vg iwi-aom--- 10,00g                                                    
+  [lab-var_mimage_1] lab-vg iwi-aom--- 10,00g                                                    
+=== 7. btrfs + LVM cache ===
+  LV                            VG       Attr       LSize  Pool                    Origin             Data%  Meta%  Move Log Cpy%Sync Convert Devices                       
+  [btrfs-cachepool_cpool]       btrfs-vg Cwi---C--- 14,00g                                            0,04   11,43           0,00             btrfs-cachepool_cpool_cdata(0)
+  [btrfs-cachepool_cpool_cdata] btrfs-vg Cwi-ao---- 14,00g                                                                                    /dev/nvme1n1p4(0)             
+  [btrfs-cachepool_cpool_cmeta] btrfs-vg ewi-ao---- 16,00m                                                                                    /dev/nvme1n1p3(24320)         
+  btrfs-data                    btrfs-vg Cwi-aoC--- 95,00g [btrfs-cachepool_cpool] [btrfs-data_corig] 0,04   11,43           0,00             btrfs-data_corig(0)           
+  [btrfs-data_corig]            btrfs-vg owi-aoC--- 95,00g                                                                                    /dev/nvme1n1p3(0)             
+  [lvol0_pmspare]               btrfs-vg ewi------- 16,00m                                                                                    /dev/nvme1n1p3(24324)         
+ID 256 gen 9 top level 5 path subvol1
+ID 257 gen 10 top level 5 path subvol1-snap
+test.txt
+=== 8. ZFS + L2ARC cache ===
+  pool: labtank
+ state: ONLINE
+config:
+
+	NAME         STATE     READ WRITE CKSUM
+	labtank      ONLINE       0     0     0
+	  nvme1n1p5  ONLINE       0     0     0
+	cache
+	  nvme1n1p6  ONLINE       0     0     0
+
+errors: No known data errors
+NAME                USED  AVAIL     REFER  MOUNTPOINT
+labtank/opt@snap1    12K      -     24.5K  -
+hello zfs
+exit
+
+Script done on 2026-07-12 04:05:20+00:00 [COMMAND_EXIT_CODE="0"]
